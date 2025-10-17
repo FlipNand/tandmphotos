@@ -16,43 +16,18 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Hearts background */
-  .hearts-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 0;
-  }
-
-  .heart {
-    position: absolute;
-    font-size: 2rem;
-    color: rgba(255,0,0,0.1); /* 10% opacity */
-    user-select: none;
   }
 
   h1 {
     font-size: 2.8em;
     color: #4a4a4a;
     margin-top: 40px;
-    z-index: 1;
-    position: relative;
   }
 
   h2 {
     font-weight: normal;
     color: #555;
     margin-bottom: 30px;
-    z-index: 1;
-    position: relative;
   }
 
   /* Custom buttons */
@@ -65,8 +40,6 @@
     cursor: pointer;
     font-size: 18px;
     transition: 0.3s;
-    z-index: 1;
-    position: relative;
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     margin: 10px;
   }
@@ -80,14 +53,10 @@
     margin-top: 20px;
     font-weight: bold;
     color: #444;
-    z-index: 1;
-    position: relative;
   }
 
   #preview {
     margin-top: 20px;
-    z-index: 1;
-    position: relative;
   }
 
   #preview img {
@@ -98,8 +67,6 @@
 </style>
 </head>
 <body>
-
-<div class="hearts-container" id="hearts-container"></div>
 
 <h1>Tobi and Mark 💕</h1>
 <h2>Upload Your Wedding Photos 📸</h2>
@@ -117,39 +84,6 @@ const chooseFileBtn = document.getElementById("chooseFileBtn");
 const uploadBtn = document.getElementById("uploadBtn");
 const preview = document.getElementById("preview");
 const status = document.getElementById("status");
-const heartsContainer = document.getElementById("hearts-container");
-
-// Hearts config
-const numColumns = 10;
-const heartsPerColumn = 8;
-const heartChar = "❤️";
-
-for(let i=0; i<numColumns; i++){
-  const xPercent = (i / numColumns) * 100 + 5; // evenly spaced
-  const speed = 10 + Math.random()*10; // seconds per column
-
-  for(let j=0; j<heartsPerColumn; j++){
-    const heart = document.createElement("div");
-    heart.classList.add("heart");
-    heart.textContent = heartChar;
-    heart.style.left = `${xPercent}%`;
-    heart.style.fontSize = `${Math.random()*1.5+1.5}rem`;
-    heart.style.color = "rgba(255,0,0,0.1)";
-
-    // Evenly spaced starting positions below the viewport
-    const spacing = 120 / heartsPerColumn; // 120vh total range
-    heart.style.top = `${100 + j*spacing}vh`;
-
-    // Animate upward with column-specific speed
-    heart.style.transition = `transform ${speed}s linear`;
-    heartsContainer.appendChild(heart);
-
-    // Start animation after a short delay so browser renders the initial position
-    setTimeout(() => {
-      heart.style.transform = `translateY(-${120}vh)`; // move up
-    }, 50 + Math.random()*100); // tiny random delay for natural feel
-  }
-}
 
 // Custom choose photo button
 chooseFileBtn.addEventListener("click", () => fileInput.click());
