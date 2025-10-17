@@ -1,68 +1,102 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Wedding Photo Upload</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tobi and Mark Wedding Upload</title>
 <style>
-  body { font-family: sans-serif; text-align:center; padding:2rem; }
-  input, button { font-size:1rem; margin:.5rem; padding:.5rem; }
-  img.preview { max-width:150px; margin-top:1rem; border-radius:6px; }
+  body {
+    background-color: #e4ffc2;
+    font-family: "Segoe UI", Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  h1 {
+    font-size: 2.5em;
+    color: #4a4a4a;
+    margin-top: 40px;
+  }
+
+  h2 {
+    font-weight: normal;
+    color: #555;
+    margin-bottom: 30px;
+  }
+
+  input[type="file"],
+  button {
+    margin: 10px;
+    font-size: 18px;
+  }
+
+  button {
+    background-color: #7bcf64;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background-color: #66b54f;
+  }
+
+  #status {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #444;
+  }
 </style>
 </head>
 <body>
-  <h1>💍 Upload Your Wedding Photo</h1>
-  <p>Pick a photo and tap Upload — no login needed.</p>
+  <h1>Tobi and Mark 💕</h1>
+  <h2>Upload Your Wedding Photos 📸</h2>
+
   <input type="file" id="fileInput" accept="image/*" capture="environment" />
-  <br><button id="uploadBtn">Upload</button>
+  <br>
+  <button onclick="upload()">Upload</button>
   <p id="status"></p>
-  <div id="preview"></div>
 
   <script>
-    const UPLOAD_URL = "https://weddingphoto.arifsteinberg.workers.dev/"; // ← replace this
+    async function upload() {
+      const file = document.getElementById('fileInput').files[0];
+      const status = document.getElementById('status');
+      if (!file) return alert('Please select a photo.');
 
-    const input = document.getElementById("fileInput");
-    const preview = document.getElementById("preview");
-    const status = document.getElementById("status");
+      status.textContent = "Uploading...";
 
-    input.addEventListener("change", () => {
-      preview.innerHTML = "";
-      const f = input.files[0];
-      if (f) {
-        const img = document.createElement("img");
-        img.className = "preview";
-        img.src = URL.createObjectURL(f);
-        preview.appendChild(img);
-      }
-    });
-
-    document.getElementById("uploadBtn").addEventListener("click", async () => {
-      const file = input.files[0];
-      if (!file) return alert("Pick a photo first.");
-
-      status.textContent = "Reading file...";
       const reader = new FileReader();
-
       reader.onloadend = async () => {
         const base64data = reader.result.split(",")[1];
         const filename = Date.now() + "-" + file.name.replace(/\s+/g, "_");
-        status.textContent = "Uploading...";
 
-        try {
-          const res = await fetch(UPLOAD_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ filename, base64data })
-          });
-          const text = await res.text();
-          status.textContent = text;
-        } catch (e) {
-          status.textContent = "❌ Upload failed: " + e.message;
+        const res = await fetch("https://weddingphoto.arifsteinberg.workers.dev/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ filename, base64data })
+        });
+
+        if (res.ok) {
+          status.textContent = "✅ Uploaded! Thank you for sharing your photo!";
+        } else {
+          const err = await res.text();
+          status.textContent = "❌ Upload failed: " + err;
         }
       };
-
       reader.readAsDataURL(file);
-    });
+    }
   </script>
 </body>
 </html>
