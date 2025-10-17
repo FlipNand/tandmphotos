@@ -35,16 +35,8 @@
   .heart {
     position: absolute;
     font-size: 2rem;
-    color: rgba(255,0,0,0.1);
+    color: rgba(255,0,0,0.1); /* 10% opacity */
     user-select: none;
-    animation-name: floatUp;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-  }
-
-  @keyframes floatUp {
-    0% { transform: translateY(100vh); }
-    100% { transform: translateY(-10vh); }
   }
 
   h1 {
@@ -107,94 +99,97 @@
 </head>
 <body>
 
-  <!-- Hearts background -->
-  <div class="hearts-container" id="hearts-container"></div>
+<div class="hearts-container" id="hearts-container"></div>
 
-  <h1>Tobi and Mark 💕</h1>
-  <h2>Upload Your Wedding Photos 📸</h2>
+<h1>Tobi and Mark 💕</h1>
+<h2>Upload Your Wedding Photos 📸</h2>
 
-  <!-- Custom file input button -->
-  <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none;" />
-  <button class="button" id="chooseFileBtn">Choose Photo</button>
-  <button class="button" id="uploadBtn">Upload</button>
+<input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none;" />
+<button class="button" id="chooseFileBtn">Choose Photo</button>
+<button class="button" id="uploadBtn">Upload</button>
 
-  <p id="status"></p>
-  <div id="preview"></div>
+<p id="status"></p>
+<div id="preview"></div>
 
-  <script>
-    const fileInput = document.getElementById("fileInput");
-    const chooseFileBtn = document.getElementById("chooseFileBtn");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const preview = document.getElementById("preview");
-    const status = document.getElementById("status");
-    const heartsContainer = document.getElementById("hearts-container");
+<script>
+const fileInput = document.getElementById("fileInput");
+const chooseFileBtn = document.getElementById("chooseFileBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const preview = document.getElementById("preview");
+const status = document.getElementById("status");
+const heartsContainer = document.getElementById("hearts-container");
 
-    // Generate hearts background
-    const numColumns = 10;
-    const heartsPerColumn = 8;
-    const heartChar = "❤️";
-    for(let i = 0; i < numColumns; i++){
-      const xPercent = (i / numColumns) * 100 + Math.random()*5;
-      for(let j = 0; j < heartsPerColumn; j++){
-        const heart = document.createElement("div");
-        heart.classList.add("heart");
-        heart.style.left = `${xPercent}%`;
-        heart.style.fontSize = `${Math.random()*1.5+1.5}rem`;
-        heart.style.animationDuration = `${15 + Math.random()*10}s`;
-        heart.style.animationDelay = `${Math.random()*10}s`;
-        heart.textContent = heartChar;
-        heartsContainer.appendChild(heart);
-      }
+// Hearts config
+const numColumns = 10;
+const heartsPerColumn = 8;
+const heartChar = "❤️";
+
+for(let i=0; i<numColumns; i++){
+  const xPercent = (i / numColumns) * 100 + 5; // evenly spaced
+  const speed = 10 + Math.random()*10; // seconds per column
+
+  for(let j=0; j<heartsPerColumn; j++){
+    const heart = document.createElement("div");
+    heart.classList.add("heart");
+    heart.textContent = heartChar;
+    heart.style.left = `${xPercent}%`;
+    heart.style.fontSize = `${Math.random()*1.5+1.5}rem`;
+    heart.style.color = "rgba(255,0,0,0.1)";
+
+    // Evenly spaced starting positions below the viewport
+    const spacing = 120 / heartsPerColumn; // 120vh total range
+    heart.style.top = `${100 + j*spacing}vh`;
+
+    // Animate upward with column-specific speed
+    heart.style.transition = `transform ${speed}s linear`;
+    heartsContainer.appendChild(heart);
+
+    // Start animation after a short delay so browser renders the initial position
+    setTimeout(() => {
+      heart.style.transform = `translateY(-${120}vh)`; // move up
+    }, 50 + Math.random()*100); // tiny random delay for natural feel
+  }
+}
+
+// Custom choose photo button
+chooseFileBtn.addEventListener("click", () => fileInput.click());
+
+// Image preview
+fileInput.addEventListener("change", () => {
+  preview.innerHTML = "";
+  const file = fileInput.files[0];
+  if(file){
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    preview.appendChild(img);
+  }
+});
+
+// Upload
+uploadBtn.addEventListener("click", async () => {
+  const file = fileInput.files[0];
+  if(!file) return alert("Please select a photo.");
+  status.textContent = "Uploading...";
+
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    const base64data = reader.result.split(",")[1];
+    const filename = Date.now() + "-" + file.name.replace(/\s+/g, "_");
+
+    try{
+      const res = await fetch("https://weddingphoto.arifsteinberg.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename, base64data })
+      });
+      status.textContent = res.ok ? "✅ Uploaded!" : "❌ Upload failed.";
+    }catch(err){
+      status.textContent = "❌ Network error.";
+      console.error(err);
     }
-
-    // Custom choose photo button
-    chooseFileBtn.addEventListener("click", () => {
-      fileInput.click();
-    });
-
-    // Image preview
-    fileInput.addEventListener("change", () => {
-      preview.innerHTML = "";
-      const file = fileInput.files[0];
-      if (file) {
-        const img = document.createElement("img");
-        img.src = URL.createObjectURL(file);
-        preview.appendChild(img);
-      }
-    });
-
-    // Upload
-    uploadBtn.addEventListener("click", async () => {
-      const file = fileInput.files[0];
-      if (!file) return alert("Please select a photo.");
-      status.textContent = "Uploading...";
-
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64data = reader.result.split(",")[1];
-        const filename = Date.now() + "-" + file.name.replace(/\s+/g, "_");
-
-        try {
-          const res = await fetch("https://weddingphoto.arifsteinberg.workers.dev/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ filename, base64data })
-          });
-
-          if (res.ok) {
-            status.textContent = "✅ Uploaded!";
-          } else {
-            const err = await res.text();
-            status.textContent = "❌ Upload failed.";
-            console.error("Upload error:", err);
-          }
-        } catch (err) {
-          status.textContent = "❌ Network error.";
-          console.error("Network error:", err);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  </script>
+  };
+  reader.readAsDataURL(file);
+});
+</script>
 </body>
 </html>
