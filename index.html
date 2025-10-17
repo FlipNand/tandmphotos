@@ -80,19 +80,23 @@
         const base64data = reader.result.split(",")[1];
         const filename = Date.now() + "-" + file.name.replace(/\s+/g, "_");
 
-        const res = await fetch("https://weddingphoto.arifsteinberg.workers.dev/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ filename, base64data })
-        });
+        try {
+          const res = await fetch("https://weddingphoto.arifsteinberg.workers.dev/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ filename, base64data })
+          });
 
-        if (res.ok) {
-          status.textContent = "✅ Uploaded! Thank you for sharing your photo!";
-        } else {
-          const err = await res.text();
-          status.textContent = "❌ Upload failed: " + err;
+          if (res.ok) {
+            status.textContent = "✅ Uploaded!";
+          } else {
+            const err = await res.text();
+            status.textContent = "❌ Upload failed.";
+            console.error("Upload error:", err);
+          }
+        } catch (err) {
+          status.textContent = "❌ Network error.";
+          console.error("Network error:", err);
         }
       };
       reader.readAsDataURL(file);
