@@ -20,26 +20,35 @@
     overflow: hidden;
   }
 
-  /* Floating hearts animation */
-  .hearts {
+  /* Hearts background */
+  .hearts-container {
     position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 3em;
-    color: rgba(255,0,0,0.1);
-    white-space: nowrap;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
-    animation: floatHearts 20s linear infinite;
+    overflow: hidden;
+    z-index: 0;
   }
 
-  @keyframes floatHearts {
-    0% { transform: translateX(-50%) translateY(0); }
-    100% { transform: translateX(-50%) translateY(-120vh); }
+  .heart {
+    position: absolute;
+    font-size: 2rem;
+    color: rgba(255,0,0,0.1);
+    user-select: none;
+    animation-name: floatUp;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(100vh); }
+    100% { transform: translateY(-10vh); }
   }
 
   h1 {
-    font-size: 2.5em;
+    font-size: 2.8em;
     color: #4a4a4a;
     margin-top: 40px;
     z-index: 1;
@@ -54,30 +63,25 @@
     position: relative;
   }
 
-  input[type="file"] {
-    margin: 10px;
-    font-size: 18px;
-    z-index: 1;
-    position: relative;
-  }
-
-  button {
-    background-color: #7bcf64;
+  /* Custom buttons */
+  .button {
+    background-color: #66b54f;
     border: none;
     color: white;
-    padding: 12px 25px;
+    padding: 12px 30px;
     border-radius: 12px;
     cursor: pointer;
     font-size: 18px;
     transition: 0.3s;
     z-index: 1;
     position: relative;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    margin: 10px;
   }
 
-  button:hover {
-    background-color: #66b54f;
-    box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+  .button:hover {
+    background-color: #4a8a3d;
+    box-shadow: 0 6px 10px rgba(0,0,0,0.2);
   }
 
   #status {
@@ -102,26 +106,56 @@
 </style>
 </head>
 <body>
-  <!-- Floating hearts -->
-  <div class="hearts">❤️ ❤️ ❤️ ❤️ ❤️ ❤️ ❤️ ❤️ ❤️ ❤️</div>
+
+  <!-- Hearts background -->
+  <div class="hearts-container" id="hearts-container"></div>
 
   <h1>Tobi and Mark 💕</h1>
   <h2>Upload Your Wedding Photos 📸</h2>
 
-  <input type="file" id="fileInput" accept="image/*" capture="environment" />
-  <br>
-  <button onclick="upload()">Upload</button>
+  <!-- Custom file input button -->
+  <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none;" />
+  <button class="button" id="chooseFileBtn">Choose Photo</button>
+  <button class="button" id="uploadBtn">Upload</button>
+
   <p id="status"></p>
   <div id="preview"></div>
 
   <script>
-    const input = document.getElementById("fileInput");
+    const fileInput = document.getElementById("fileInput");
+    const chooseFileBtn = document.getElementById("chooseFileBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
     const preview = document.getElementById("preview");
     const status = document.getElementById("status");
+    const heartsContainer = document.getElementById("hearts-container");
 
-    input.addEventListener("change", () => {
+    // Generate hearts background
+    const numColumns = 10;
+    const heartsPerColumn = 8;
+    const heartChar = "❤️";
+    for(let i = 0; i < numColumns; i++){
+      const xPercent = (i / numColumns) * 100 + Math.random()*5;
+      for(let j = 0; j < heartsPerColumn; j++){
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.style.left = `${xPercent}%`;
+        heart.style.fontSize = `${Math.random()*1.5+1.5}rem`;
+        heart.style.animationDuration = `${15 + Math.random()*10}s`;
+        heart.style.animationDelay = `${Math.random()*10}s`;
+        heart.textContent = heartChar;
+        heartsContainer.appendChild(heart);
+      }
+    }
+
+    // Custom choose photo button
+    chooseFileBtn.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    // Image preview
+    fileInput.addEventListener("change", () => {
       preview.innerHTML = "";
-      const file = input.files[0];
+      const file = fileInput.files[0];
       if (file) {
         const img = document.createElement("img");
         img.src = URL.createObjectURL(file);
@@ -129,10 +163,10 @@
       }
     });
 
-    async function upload() {
-      const file = input.files[0];
-      if (!file) return alert('Please select a photo.');
-
+    // Upload
+    uploadBtn.addEventListener("click", async () => {
+      const file = fileInput.files[0];
+      if (!file) return alert("Please select a photo.");
       status.textContent = "Uploading...";
 
       const reader = new FileReader();
@@ -160,7 +194,7 @@
         }
       };
       reader.readAsDataURL(file);
-    }
+    });
   </script>
 </body>
 </html>
