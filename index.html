@@ -1,56 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Wedding Photo Upload</title>
 <style>
-  body { font-family: sans-serif; text-align: center; margin-top: 4rem; }
-  input, button { margin: 10px; font-size: 18px; }
+  body { font-family: sans-serif; text-align:center; padding:2rem; }
+  input, button { font-size:1rem; margin:.5rem; padding:.5rem; }
+  img.preview { max-width:150px; margin-top:1rem; border-radius:6px; }
 </style>
 </head>
 <body>
-  <h1>💍 Upload Your Wedding Photos 💐</h1>
-  <p>Take or select a photo below and it’ll upload instantly!</p>
+  <h1>💍 Upload Your Wedding Photo</h1>
+  <p>Pick a photo and tap Upload — no login needed.</p>
   <input type="file" id="fileInput" accept="image/*" capture="environment" />
-  <br>
-  <button onclick="upload()">Upload</button>
+  <br><button id="uploadBtn">Upload</button>
   <p id="status"></p>
+  <div id="preview"></div>
 
   <script>
-    async function upload() {
-      const file = document.getElementById('fileInput').files[0];
-      const status = document.getElementById('status');
-      if (!file) return alert('Please select a photo.');
+    const UPLOAD_URL = "https://weddingphoto.arifsteinberg.workers.dev/"; // ← replace this
 
-      status.textContent = "Uploading...";
+    const input = document.getElementById("fileInput");
+    const preview = document.getElementById("preview");
+    const status = document.getElementById("status");
 
+    input.addEventListener("change", () => {
+      preview.innerHTML = "";
+      const f = input.files[0];
+      if (f) {
+        const img = document.createElement("img");
+        img.className = "preview";
+        img.src = URL.createObjectURL(f);
+        preview.appendChild(img);
+      }
+    });
+
+    document.getElementById("uploadBtn").addEventListener("click", async () => {
+      const file = input.files[0];
+      if (!file) return alert("Pick a photo first.");
+
+      status.textContent = "Reading file...";
       const reader = new FileReader();
+
       reader.onloadend = async () => {
         const base64data = reader.result.split(",")[1];
         const filename = Date.now() + "-" + file.name.replace(/\s+/g, "_");
+        status.textContent = "Uploading...";
 
-        const res = await fetch("https://api.github.com/repos/FlipNand/tandmphotos/contents/uploads/" + filename, {
-          method: "PUT",
-          headers: {
-            "Authorization": "token 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",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: "Add wedding photo " + filename,
-            content: base64data
-          })
-        });
-
-        if (res.ok) {
-          status.textContent = "✅ Uploaded! Thank you!";
-        } else {
-          const err = await res.text();
-          status.textContent = "❌ Upload failed: " + err;
+        try {
+          const res = await fetch(UPLOAD_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ filename, base64data })
+          });
+          const text = await res.text();
+          status.textContent = text;
+        } catch (e) {
+          status.textContent = "❌ Upload failed: " + e.message;
         }
       };
+
       reader.readAsDataURL(file);
-    }
+    });
   </script>
 </body>
 </html>
