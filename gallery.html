@@ -1,144 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tobi & Mark Gallery</title>
-  <style>
-    body {
-      background-color: #e4ffc2;
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tobi and Mark Gallery 💕</title>
+<style>
+  body {
+    background-color: #e4ffc2;
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-    header {
-      text-align: center;
-      margin: 30px 0 10px;
-    }
+  /* Navigation bar */
+  nav {
+    width: 100%;
+    background-color: #66b54f;
+    padding: 15px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
 
-    header h1 {
-      color: #ff82a9;
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
+  nav button {
+    background-color: #ff82a9;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: 17px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 10px;
+    box-shadow: 0 4px 10px rgba(255, 130, 169, 0.4);
+  }
 
-    .button-container {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
+  nav button:hover {
+    background-color: #ff9dbd;
+    transform: scale(1.05);
+  }
 
-    button {
-      background-color: #ff82a9;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-size: 18px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 10px rgba(255, 130, 169, 0.4);
-    }
+  h1 {
+    font-size: 2.5em;
+    color: #4a4a4a;
+    margin-top: 30px;
+  }
 
-    button:hover {
-      background-color: #ff9dbd;
-      transform: scale(1.05);
-    }
+  /* Gallery grid */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 30px;
+    width: 100%;
+    box-sizing: border-box;
+  }
 
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 15px;
-      width: 90%;
-      max-width: 1200px;
-      margin-bottom: 50px;
-    }
+  .gallery img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+  }
 
-    .gallery img {
-      width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease;
-      object-fit: cover;
-    }
+  .gallery img:hover {
+    transform: scale(1.05);
+  }
 
-    .gallery img:hover {
-      transform: scale(1.03);
-    }
+  .download-all {
+    background-color: #66b54f;
+    color: white;
+    border: none;
+    padding: 12px 26px;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 20px auto 40px auto;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
 
-    footer {
-      margin-bottom: 20px;
-      font-size: 14px;
-      color: #666;
-    }
-  </style>
+  .download-all:hover {
+    background-color: #4a8a3d;
+    transform: scale(1.05);
+  }
+
+</style>
 </head>
 <body>
-  <header>
-    <h1>Tobi & Mark Gallery</h1>
-  </header>
 
-  <div class="button-container">
-    <button onclick="window.location.href='index.html'">Home</button>
-    <button onclick="downloadAll()">Download All</button>
-  </div>
+<nav>
+  <button onclick="window.location.href='index.html'">🏠 Home</button>
+  <button class="download-all" onclick="downloadAll()">⬇️ Download All</button>
+</nav>
 
-  <div id="gallery" class="gallery">Loading photos...</div>
+<h1>Tobi & Mark’s Wedding Gallery 💕</h1>
 
-  <footer>© 2025 Tobi & Mark</footer>
+<div class="gallery" id="gallery"></div>
 
-  <script>
-    const GITHUB_API =
-      'https://api.github.com/repos/FlipNand/tandmphotos/contents/uploads';
+<script>
+// Fetch images from uploads folder
+async function loadGallery() {
+  try {
+    const res = await fetch("uploads/");
+    const text = await res.text();
+    const parser = new DOMParser();
+    const html = parser.parseFromString(text, "text/html");
+    const links = [...html.querySelectorAll("a")];
+    const imageLinks = links.filter(a => /\.(jpg|jpeg|png|gif|webp)$/i.test(a.href));
 
-    async function loadGallery() {
-      const gallery = document.getElementById('gallery');
-      try {
-        const response = await fetch(GITHUB_API);
-        if (!response.ok) throw new Error('Failed to fetch images');
-        const files = await response.json();
+    const gallery = document.getElementById("gallery");
+    gallery.innerHTML = "";
 
-        const images = files.filter(file =>
-          /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name)
-        );
-
-        if (images.length === 0) {
-          gallery.innerHTML = '<p>No photos uploaded yet.</p>';
-          return;
-        }
-
-        gallery.innerHTML = images
-          .map(
-            img => `
-            <a href="${img.download_url}" target="_blank">
-              <img src="${img.download_url}" alt="${img.name}" />
-            </a>`
-          )
-          .join('');
-      } catch (error) {
-        gallery.innerHTML = '<p>Error loading gallery.</p>';
-        console.error(error);
-      }
+    if (imageLinks.length === 0) {
+      gallery.innerHTML = "<p>No photos uploaded yet 💔</p>";
+      return;
     }
 
-    async function downloadAll() {
-      const zipUrl =
-        'https://github.com/FlipNand/tandmphotos/archive/refs/heads/main.zip';
-      const link = document.createElement('a');
-      link.href = zipUrl;
-      link.download = 'tandmphotos-main.zip';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    imageLinks.forEach(link => {
+      const img = document.createElement("img");
+      img.src = "uploads/" + link.getAttribute("href");
+      gallery.appendChild(img);
+    });
+  } catch (err) {
+    console.error(err);
+    document.getElementById("gallery").innerHTML = "<p>⚠️ Unable to load gallery.</p>";
+  }
+}
 
-    loadGallery();
-  </script>
+// Download all as ZIP
+function downloadAll() {
+  window.location.href = "uploads.zip"; // Your server should serve a zip of the uploads folder
+}
+
+loadGallery();
+</script>
+
 </body>
 </html>
