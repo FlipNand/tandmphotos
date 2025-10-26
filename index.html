@@ -14,62 +14,23 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
   }
 
-  /* Navigation Bar */
-  nav {
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 30px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 0;
-    backdrop-filter: blur(10px);
-  }
-
-  nav h1 {
-    margin: 0;
-    font-size: 24px;
-    color: #66b54f;
-  }
-
-  .nav-buttons {
-    display: flex;
-    gap: 10px;
-  }
-
-  .nav-buttons button {
-    background-color: #66b54f;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  }
-
-  .nav-buttons button:hover {
-    background-color: #4a8a3d;
-    transform: scale(1.05);
-  }
-
-  h2 {
-    font-size: 2.2em;
+  h1 {
+    font-size: 2.8em;
     color: #4a4a4a;
     margin-top: 40px;
   }
 
-  p {
+  h2 {
+    font-weight: normal;
     color: #555;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
   }
 
+  /* Custom buttons */
   .button {
     background-color: #66b54f;
     border: none;
@@ -99,7 +60,7 @@
   }
 
   #preview img {
-    max-width: 220px;
+    max-width: 200px;
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   }
@@ -107,25 +68,16 @@
 </head>
 <body>
 
-  <!-- Navigation -->
-  <nav>
-    <h1>💍 Tobi & Mark</h1>
-    <div class="nav-buttons">
-      <button onclick="window.location.href='index.html'">Home</button>
-      <button onclick="window.location.href='gallery.html'">Gallery</button>
-    </div>
-  </nav>
+<h1>Tobi and Mark 💕</h1>
+<h2>Upload Your Wedding Photos 📸</h2>
 
-  <!-- Content -->
-  <h2>Upload Your Wedding Photos 📸</h2>
-  <p>Choose a photo or take one now — it’ll upload instantly!</p>
+<!-- Notice: capture removed -->
+<input type="file" id="fileInput" accept="image/*" style="display:none;" />
+<button class="button" id="chooseFileBtn">Choose Photo</button>
+<button class="button" id="uploadBtn">Upload</button>
 
-  <input type="file" id="fileInput" accept="image/*" style="display:none;" />
-  <button class="button" id="chooseFileBtn">Choose Photo</button>
-  <button class="button" id="uploadBtn">Upload</button>
-
-  <p id="status"></p>
-  <div id="preview"></div>
+<p id="status"></p>
+<div id="preview"></div>
 
 <script>
 const fileInput = document.getElementById("fileInput");
@@ -148,7 +100,7 @@ fileInput.addEventListener("change", () => {
   }
 });
 
-// Upload logic
+// Upload
 uploadBtn.addEventListener("click", async () => {
   const file = fileInput.files[0];
   if(!file) return alert("Please select a photo.");
@@ -159,14 +111,14 @@ uploadBtn.addEventListener("click", async () => {
     const base64data = reader.result.split(",")[1];
     const filename = Date.now() + "-" + file.name.replace(/\s+/g, "_");
 
-    try {
+    try{
       const res = await fetch("https://weddingphoto.arifsteinberg.workers.dev/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename, base64data })
       });
       status.textContent = res.ok ? "✅ Uploaded!" : "❌ Upload failed.";
-    } catch(err) {
+    }catch(err){
       status.textContent = "❌ Network error.";
       console.error(err);
     }
@@ -174,6 +126,5 @@ uploadBtn.addEventListener("click", async () => {
   reader.readAsDataURL(file);
 });
 </script>
-
 </body>
 </html>
